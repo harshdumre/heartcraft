@@ -331,13 +331,6 @@ export default function CreatePage() {
                   {emoji}
                 </div>
 
-                {/* OCCASION */}
-                <p
-                  className={`mt-6 text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}
-                >
-                  {occasion}
-                </p>
-
                 {/* TITLE */}
                 <h2 className="mt-4 text-3xl font-bold text-gray-900">
                   {occasion === "Birthday"
