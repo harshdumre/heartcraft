@@ -152,10 +152,12 @@ export default function CreatePage() {
   return (
     <main className="min-h-screen bg-[#fff8fb] px-6 py-10">
       <div className="mx-auto max-w-6xl">
+
+        {/* PAGE HEADER */}
         <div className="mb-10 text-center">
           <div className="text-3xl">❤️</div>
 
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-4xl font-bold text-gray-900">
             Create Something Special
           </h1>
 
@@ -165,22 +167,28 @@ export default function CreatePage() {
         </div>
 
         <div className="grid gap-10 lg:grid-cols-2">
-          {/* FORM */}
+
+          {/* ================= FORM ================= */}
           <section className="rounded-3xl border border-pink-100 bg-white p-7 shadow-sm">
-            <h2 className="text-2xl font-bold">
+
+            <h2 className="text-2xl font-bold text-gray-900">
               Personalize your card
             </h2>
 
-            {/* Occasion */}
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              Add your details and choose a design that matches your feelings.
+            </p>
+
+            {/* OCCASION */}
             <div className="mt-7">
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-semibold text-gray-800">
                 Occasion
               </label>
 
               <select
                 value={occasion}
                 onChange={(e) => setOccasion(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-pink-400"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
               >
                 <option value="Birthday">Birthday</option>
                 <option value="Sorry">Sorry</option>
@@ -191,9 +199,9 @@ export default function CreatePage() {
               </select>
             </div>
 
-            {/* Recipient */}
+            {/* RECIPIENT */}
             <div className="mt-6">
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-semibold text-gray-800">
                 Who is this for?
               </label>
 
@@ -202,13 +210,13 @@ export default function CreatePage() {
                 placeholder="Enter their name"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-pink-400"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
               />
             </div>
 
-            {/* Sender */}
+            {/* SENDER */}
             <div className="mt-6">
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-sm font-semibold text-gray-800">
                 Your name
               </label>
 
@@ -217,76 +225,96 @@ export default function CreatePage() {
                 placeholder="Enter your name"
                 value={sender}
                 onChange={(e) => setSender(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-pink-400"
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
               />
             </div>
 
-            {/* Message */}
+            {/* MESSAGE */}
             <div className="mt-6">
-              <label className="mb-2 block text-sm font-semibold">
-                Your message
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-semibold text-gray-800">
+                  Your message
+                </label>
+
+                <span className="text-xs text-gray-500">
+                  {message.length}/500
+                </span>
+              </div>
 
               <textarea
                 placeholder="Write something from your heart..."
                 value={message}
+                maxLength={500}
                 onChange={(e) => setMessage(e.target.value)}
-                rows={6}
-                className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-pink-400"
+                rows={7}
+                className="mt-2 w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
               />
+
+              <p className="mt-2 text-xs text-gray-500">
+                Write a personal message that comes straight from your heart.
+              </p>
             </div>
 
-            {/* Theme */}
+            {/* CARD DESIGN */}
             <div className="mt-6">
-              <label className="mb-3 block text-sm font-semibold">
+              <label className="mb-3 block text-sm font-semibold text-gray-800">
                 Choose your card design
               </label>
 
               <div className="grid grid-cols-2 gap-3">
+
                 {(Object.keys(themes) as ThemeName[]).map((item) => (
                   <button
                     type="button"
                     key={item}
                     onClick={() => setStyle(item)}
-                    className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                    className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition ${
                       style === item
                         ? `${themes[item].border} ${themes[item].badge} ring-2 ring-pink-200`
-                        : "border-gray-200 bg-white hover:border-gray-300"
+                        : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
                     }`}
                   >
-                    {item === "Cute" && "🌸 "}
-                    {item === "Romantic" && "🌹 "}
-                    {item === "Emotional" && "🥺 "}
-                    {item === "Elegant" && "✨ "}
-                    {item === "Dreamy" && "🌙 "}
-                    {item === "Sunset" && "🌅 "}
+                    <span className="mr-2">
+                      {item === "Cute" && "🌸"}
+                      {item === "Romantic" && "🌹"}
+                      {item === "Emotional" && "🥺"}
+                      {item === "Elegant" && "✨"}
+                      {item === "Dreamy" && "🌙"}
+                      {item === "Sunset" && "🌅"}
+                    </span>
+
                     {item}
                   </button>
                 ))}
+
               </div>
             </div>
 
-            {/* Create Button */}
+            {/* CREATE BUTTON */}
             <button
               type="button"
               onClick={createCard}
               disabled={isCreating}
-              className={`mt-8 w-full rounded-full px-6 py-4 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${selectedTheme.button}`}
+              className={`mt-8 w-full rounded-full px-6 py-4 font-semibold text-white shadow-md transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 ${selectedTheme.button}`}
             >
               {isCreating
                 ? "Creating Your Card..."
                 : "Create My Card ❤️"}
             </button>
+
           </section>
 
-          {/* PREVIEW */}
+          {/* ================= PREVIEW ================= */}
           <section>
+
             <div className="mb-4 text-center">
-              <p className={`text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}>
+              <p
+                className={`text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}
+              >
                 Live Preview
               </p>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-600">
                 {style} design
               </p>
             </div>
@@ -297,14 +325,20 @@ export default function CreatePage() {
               <div
                 className={`w-full max-w-md rounded-[2rem] border p-10 text-center shadow-2xl ${selectedTheme.cardBg} ${selectedTheme.border}`}
               >
-                <div className="text-6xl">{emoji}</div>
 
+                {/* EMOJI */}
+                <div className="text-6xl">
+                  {emoji}
+                </div>
+
+                {/* OCCASION */}
                 <p
                   className={`mt-6 text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}
                 >
                   {occasion}
                 </p>
 
+                {/* TITLE */}
                 <h2 className="mt-4 text-3xl font-bold text-gray-900">
                   {occasion === "Birthday"
                     ? `Happy Birthday${recipient ? `, ${recipient}` : ""}!`
@@ -319,31 +353,38 @@ export default function CreatePage() {
                     : `Thank You${recipient ? `, ${recipient}` : ""}`}
                 </h2>
 
+                {/* DIVIDER */}
                 <div
                   className={`mx-auto my-8 h-px max-w-xs ${selectedTheme.divider}`}
                 />
 
-                <p className="min-h-[120px] whitespace-pre-wrap text-lg leading-8 text-gray-600">
+                {/* MESSAGE */}
+                <p className="min-h-[120px] whitespace-pre-wrap text-lg leading-8 text-gray-700">
                   {message ||
                     "Your heartfelt message will appear here..."}
                 </p>
 
+                {/* SENDER */}
                 <div className="mt-8">
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-500">
                     With love,
                   </p>
 
-                  <p className="mt-1 font-semibold text-gray-800">
+                  <p className="mt-1 font-semibold text-gray-900">
                     {sender || "Your Name"}
                   </p>
                 </div>
 
+                {/* DECORATION */}
                 <div className="mt-8 text-2xl">
                   {selectedTheme.decoration}
                 </div>
+
               </div>
             </div>
+
           </section>
+
         </div>
       </div>
     </main>
