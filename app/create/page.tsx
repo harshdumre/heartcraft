@@ -3,12 +3,94 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+const themes = {
+  Cute: {
+    previewBg:
+      "bg-gradient-to-br from-pink-100 via-white to-purple-100",
+    cardBg:
+      "bg-gradient-to-br from-pink-50 via-white to-purple-50",
+    border: "border-pink-200",
+    accent: "text-pink-500",
+    divider: "bg-pink-200",
+    button: "bg-pink-500 hover:bg-pink-600",
+    badge: "bg-pink-100 text-pink-600",
+    decoration: "🌸 💕 🌸",
+  },
+
+  Romantic: {
+    previewBg:
+      "bg-gradient-to-br from-rose-200 via-pink-100 to-red-100",
+    cardBg:
+      "bg-gradient-to-br from-rose-50 via-white to-pink-50",
+    border: "border-rose-200",
+    accent: "text-rose-500",
+    divider: "bg-rose-200",
+    button: "bg-rose-500 hover:bg-rose-600",
+    badge: "bg-rose-100 text-rose-600",
+    decoration: "🌹 ❤️ 🌹",
+  },
+
+  Emotional: {
+    previewBg:
+      "bg-gradient-to-br from-blue-100 via-white to-pink-100",
+    cardBg:
+      "bg-gradient-to-br from-blue-50 via-white to-pink-50",
+    border: "border-blue-200",
+    accent: "text-blue-500",
+    divider: "bg-blue-200",
+    button: "bg-blue-500 hover:bg-blue-600",
+    badge: "bg-blue-100 text-blue-600",
+    decoration: "✨ 💙 ✨",
+  },
+
+  Elegant: {
+    previewBg:
+      "bg-gradient-to-br from-gray-200 via-white to-stone-200",
+    cardBg:
+      "bg-gradient-to-br from-stone-50 via-white to-gray-50",
+    border: "border-stone-300",
+    accent: "text-stone-600",
+    divider: "bg-stone-300",
+    button: "bg-stone-700 hover:bg-stone-800",
+    badge: "bg-stone-100 text-stone-700",
+    decoration: "✦ 🤍 ✦",
+  },
+
+  Dreamy: {
+    previewBg:
+      "bg-gradient-to-br from-purple-200 via-blue-100 to-pink-100",
+    cardBg:
+      "bg-gradient-to-br from-purple-50 via-white to-blue-50",
+    border: "border-purple-200",
+    accent: "text-purple-500",
+    divider: "bg-purple-200",
+    button: "bg-purple-500 hover:bg-purple-600",
+    badge: "bg-purple-100 text-purple-600",
+    decoration: "🌙 ✨ 🌙",
+  },
+
+  Sunset: {
+    previewBg:
+      "bg-gradient-to-br from-orange-200 via-rose-100 to-yellow-100",
+    cardBg:
+      "bg-gradient-to-br from-orange-50 via-white to-rose-50",
+    border: "border-orange-200",
+    accent: "text-orange-500",
+    divider: "bg-orange-200",
+    button: "bg-orange-500 hover:bg-orange-600",
+    badge: "bg-orange-100 text-orange-600",
+    decoration: "🌅 ❤️ 🌅",
+  },
+};
+
+type ThemeName = keyof typeof themes;
+
 export default function CreatePage() {
   const [occasion, setOccasion] = useState("Sorry");
   const [recipient, setRecipient] = useState("");
   const [sender, setSender] = useState("");
   const [message, setMessage] = useState("");
-  const [style, setStyle] = useState("Emotional");
+  const [style, setStyle] = useState<ThemeName>("Emotional");
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -30,6 +112,7 @@ export default function CreatePage() {
   };
 
   const emoji = occasionEmoji[occasion] || "❤️";
+  const selectedTheme = themes[style];
 
   const createCard = async () => {
     if (!recipient.trim() || !sender.trim() || !message.trim()) {
@@ -153,24 +236,30 @@ export default function CreatePage() {
               />
             </div>
 
-            {/* Style */}
+            {/* Theme */}
             <div className="mt-6">
               <label className="mb-3 block text-sm font-semibold">
-                Choose a style
+                Choose your card design
               </label>
 
-              <div className="grid grid-cols-3 gap-3">
-                {["Cute", "Romantic", "Emotional"].map((item) => (
+              <div className="grid grid-cols-2 gap-3">
+                {(Object.keys(themes) as ThemeName[]).map((item) => (
                   <button
                     type="button"
                     key={item}
                     onClick={() => setStyle(item)}
-                    className={`rounded-xl border px-3 py-3 text-sm transition ${
+                    className={`rounded-xl border px-4 py-3 text-sm font-medium transition ${
                       style === item
-                        ? "border-pink-400 bg-pink-50 text-pink-600"
-                        : "border-gray-200 bg-white"
+                        ? `${themes[item].border} ${themes[item].badge} ring-2 ring-pink-200`
+                        : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
+                    {item === "Cute" && "🌸 "}
+                    {item === "Romantic" && "🌹 "}
+                    {item === "Emotional" && "🥺 "}
+                    {item === "Elegant" && "✨ "}
+                    {item === "Dreamy" && "🌙 "}
+                    {item === "Sunset" && "🌅 "}
                     {item}
                   </button>
                 ))}
@@ -182,29 +271,41 @@ export default function CreatePage() {
               type="button"
               onClick={createCard}
               disabled={isCreating}
-              className="mt-8 w-full rounded-full bg-pink-500 px-6 py-4 font-semibold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className={`mt-8 w-full rounded-full px-6 py-4 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${selectedTheme.button}`}
             >
-              {isCreating ? "Creating Your Card..." : "Create My Card ❤️"}
+              {isCreating
+                ? "Creating Your Card..."
+                : "Create My Card ❤️"}
             </button>
           </section>
 
           {/* PREVIEW */}
           <section>
             <div className="mb-4 text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-pink-500">
+              <p className={`text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}>
                 Live Preview
+              </p>
+
+              <p className="mt-2 text-sm text-gray-500">
+                {style} design
               </p>
             </div>
 
-            <div className="flex min-h-[600px] items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 via-white to-rose-100 p-8">
-              <div className="w-full max-w-md rounded-[2rem] bg-white p-10 text-center shadow-2xl">
+            <div
+              className={`flex min-h-[600px] items-center justify-center rounded-3xl p-8 ${selectedTheme.previewBg}`}
+            >
+              <div
+                className={`w-full max-w-md rounded-[2rem] border p-10 text-center shadow-2xl ${selectedTheme.cardBg} ${selectedTheme.border}`}
+              >
                 <div className="text-6xl">{emoji}</div>
 
-                <p className="mt-6 text-sm font-semibold uppercase tracking-widest text-pink-500">
+                <p
+                  className={`mt-6 text-sm font-semibold uppercase tracking-widest ${selectedTheme.accent}`}
+                >
                   {occasion}
                 </p>
 
-                <h2 className="mt-4 text-3xl font-bold">
+                <h2 className="mt-4 text-3xl font-bold text-gray-900">
                   {occasion === "Birthday"
                     ? `Happy Birthday${recipient ? `, ${recipient}` : ""}!`
                     : occasion === "Proposal"
@@ -218,10 +319,13 @@ export default function CreatePage() {
                     : `Thank You${recipient ? `, ${recipient}` : ""}`}
                 </h2>
 
-                <div className="my-8 h-px bg-pink-100" />
+                <div
+                  className={`mx-auto my-8 h-px max-w-xs ${selectedTheme.divider}`}
+                />
 
                 <p className="min-h-[120px] whitespace-pre-wrap text-lg leading-8 text-gray-600">
-                  {message || "Your heartfelt message will appear here..."}
+                  {message ||
+                    "Your heartfelt message will appear here..."}
                 </p>
 
                 <div className="mt-8">
@@ -229,13 +333,13 @@ export default function CreatePage() {
                     With love,
                   </p>
 
-                  <p className="mt-1 font-semibold">
+                  <p className="mt-1 font-semibold text-gray-800">
                     {sender || "Your Name"}
                   </p>
                 </div>
 
                 <div className="mt-8 text-2xl">
-                  ✨ ❤️ ✨
+                  {selectedTheme.decoration}
                 </div>
               </div>
             </div>
