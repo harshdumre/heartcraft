@@ -86,37 +86,106 @@ type Card = {
   sender: string | null;
   message: string | null;
   style: string | null;
+  image_url: string | null;
 };
 
 export default function CardPage() {
   const params = useParams();
-  const code = params.code as string;
+
+  const rawCode = params?.code;
+  const code = Array.isArray(rawCode)
+    ? rawCode[0]
+    : rawCode;
 
   const [card, setCard] = useState<Card | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadCard = async () => {
-      const { data, error } = await supabase
-        .from("cards")
-        .select("occasion, recipient, sender, message, style")
-        .eq("code", code)
-        .single();
+    let isMounted = true;
 
-      if (error) {
-        console.error(error);
-        setError("This card could not be found.");
-      } else {
-        setCard(data);
+    const loadCard = async () => {
+      if (!code) {
+        if (isMounted) {
+          setError("The card link is missing its code.");
+          setLoading(false);
+        }
+
+        return;
       }
 
-      setLoading(false);
+      try {
+        const queryPromise = supabase
+          .from("cards")
+          .select(
+            "occasion, recipient, sender, message, style, image_url"
+          )
+          .eq("code", code)
+          .maybeSingle();
+
+        const timeoutPromise = new Promise<{
+          data: null;
+          error: { message: string };
+        }>((resolve) => {
+          setTimeout(() => {
+            resolve({
+              data: null,
+              error: {
+                message:
+                  "The card request timed out. Please try again.",
+              },
+            });
+          }, 10000);
+        });
+
+        const result = await Promise.race([
+          queryPromise,
+          timeoutPromise,
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (result.error) {
+          console.error("Card loading error:", result.error);
+
+          setError(
+            result.error.message ||
+              "This card could not be loaded."
+          );
+
+          return;
+        }
+
+        if (!result.data) {
+          setError("This card could not be found.");
+          return;
+        }
+
+        setCard(result.data);
+      } catch (err) {
+        console.error("Unexpected card loading error:", err);
+
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Something went wrong while opening the card."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     };
 
-    if (code) {
-      loadCard();
-    }
+    loadCard();
+
+    return () => {
+      isMounted = false;
+    };
   }, [code]);
 
   const occasionEmoji: Record<string, string> = {
@@ -128,13 +197,29 @@ export default function CardPage() {
     "Thank You": "🙏",
   };
 
+  const shareOnWhatsApp = () => {
+    const cardUrl = window.location.href;
+
+    const text = `I made a special card for you ❤️\n\n${cardUrl}`;
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank"
+    );
+  };
+
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fff8fb]">
+      <main className="flex min-h-screen items-center justify-center bg-[#fff8fb] px-6">
         <div className="text-center">
           <div className="text-5xl">❤️</div>
+
           <p className="mt-4 text-gray-500">
             Opening your card...
+          </p>
+
+          <p className="mt-2 text-xs text-gray-400">
+            Please wait a moment.
           </p>
         </div>
       </main>
@@ -144,15 +229,19 @@ export default function CardPage() {
   if (error || !card) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fff8fb] px-6">
-        <div className="text-center">
+        <div className="max-w-md text-center">
           <div className="text-5xl">💔</div>
 
-          <h1 className="mt-4 text-3xl font-bold">
-            Card Not Found
+          <h1 className="mt-4 text-3xl font-bold text-gray-900">
+            Card Could Not Be Opened
           </h1>
 
-          <p className="mt-3 text-gray-500">
-            This card may have expired or the link may be incorrect.
+          <p className="mt-4 text-gray-600">
+            {error || "This card could not be found."}
+          </p>
+
+          <p className="mt-4 break-words rounded-xl bg-gray-100 p-3 text-left text-xs text-gray-500">
+            Card code: {code || "missing"}
           </p>
         </div>
       </main>
@@ -168,84 +257,105 @@ export default function CardPage() {
 
   const selectedTheme = themes[themeName];
 
-  const shareOnWhatsApp = () => {
-    const cardUrl = window.location.href;
-
-    const text = `I made a special card for you ❤️\n\n${cardUrl}`;
-
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank"
-    );
-  };
-
   return (
     <main
       className={`flex min-h-screen items-center justify-center px-6 py-12 ${selectedTheme.pageBg}`}
     >
       <div className="w-full max-w-xl">
+
+        {/* CARD */}
         <div
           className={`rounded-[2rem] border bg-white p-3 shadow-2xl ${selectedTheme.border}`}
         >
           <div
             className={`rounded-[1.7rem] border px-8 py-12 text-center ${selectedTheme.cardBg} ${selectedTheme.border}`}
           >
-            {/* Emoji */}
+
+            {/* EMOJI */}
             <div className="text-6xl">
               {emoji}
             </div>
 
-            {/* Occasion */}
-            <p
-              className={`mt-6 text-sm font-semibold uppercase tracking-[0.3em] ${selectedTheme.accent}`}
-            >
-              {card.occasion}
-            </p>
+            {/* PHOTO */}
+            {card.image_url && (
+              <div className="mx-auto mt-7 max-w-md overflow-hidden rounded-2xl border border-white/80 shadow-lg">
+                <img
+                  src={card.image_url}
+                  alt={
+                    card.recipient
+                      ? `Photo for ${card.recipient}`
+                      : "Card photo"
+                  }
+                  className="h-64 w-full object-cover"
+                />
+              </div>
+            )}
 
-            {/* Title */}
-            <h1 className="mt-5 text-4xl font-bold text-gray-900">
+            {/* TITLE */}
+            <h1 className="mt-6 text-4xl font-bold text-gray-900">
               {card.occasion === "Birthday"
-                ? `Happy Birthday${card.recipient ? `, ${card.recipient}` : ""}!`
+                ? `Happy Birthday${
+                    card.recipient
+                      ? `, ${card.recipient}`
+                      : ""
+                  }!`
                 : card.occasion === "Proposal"
-                ? `${card.recipient || "Someone"}, I have a question...`
+                ? `${
+                    card.recipient || "Someone"
+                  }, I have a question...`
                 : card.occasion === "Sorry"
-                ? `I'm Sorry${card.recipient ? `, ${card.recipient}` : ""}`
+                ? `I'm Sorry${
+                    card.recipient
+                      ? `, ${card.recipient}`
+                      : ""
+                  }`
                 : card.occasion === "Love"
-                ? `For ${card.recipient || "Someone Special"} ❤️`
+                ? `For ${
+                    card.recipient || "Someone Special"
+                  } ❤️`
                 : card.occasion === "Anniversary"
-                ? `Happy Anniversary${card.recipient ? `, ${card.recipient}` : ""}`
-                : `Thank You${card.recipient ? `, ${card.recipient}` : ""}`}
+                ? `Happy Anniversary${
+                    card.recipient
+                      ? `, ${card.recipient}`
+                      : ""
+                  }`
+                : `Thank You${
+                    card.recipient
+                      ? `, ${card.recipient}`
+                      : ""
+                  }`}
             </h1>
 
-            {/* Divider */}
+            {/* DIVIDER */}
             <div
               className={`mx-auto my-8 h-px max-w-xs ${selectedTheme.divider}`}
             />
 
-            {/* Message */}
-            <p className="whitespace-pre-wrap text-lg leading-8 text-gray-600">
+            {/* MESSAGE */}
+            <p className="whitespace-pre-wrap text-lg leading-8 text-gray-700">
               {card.message || ""}
             </p>
 
-            {/* Sender */}
+            {/* SENDER */}
             <div className="mt-10">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-500">
                 With love,
               </p>
 
-              <p className="mt-2 text-lg font-semibold text-gray-800">
+              <p className="mt-2 text-lg font-semibold text-gray-900">
                 {card.sender || "Someone who cares"}
               </p>
             </div>
 
-            {/* Decoration */}
+            {/* DECORATION */}
             <div className="mt-8 text-2xl">
               {selectedTheme.decoration}
             </div>
+
           </div>
         </div>
 
-        {/* Share */}
+        {/* SHARE */}
         <button
           type="button"
           onClick={shareOnWhatsApp}
@@ -254,6 +364,7 @@ export default function CardPage() {
           Share on WhatsApp 💚
         </button>
 
+        {/* FOOTER */}
         <p className="mt-6 text-center text-sm text-gray-400">
           Made with ❤️ by HeartCraft
         </p>
